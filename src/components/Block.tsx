@@ -79,17 +79,20 @@ export default function Block({ id }: Props) {
   return (
     <div className="Block-main">
       <div className="Block-wrapper">
-        <i
+        <button
+          type="button"
           className="bx bx-dots-horizontal-rounded Block-menu-trigger"
-          role="button"
           aria-label="Open block menu"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
         />
         {hasChildren && (
-          <i
+          <button
+            type="button"
             className={['bx Block-nest-trigger', collapsed ? 'bx-caret-right' : 'bx-caret-down'].join(' ')}
-            role="button"
             aria-label={collapsed ? 'Expand block' : 'Collapse block'}
+            aria-expanded={!collapsed}
             onClick={() => setCollapsed((c) => !c)}
           />
         )}
