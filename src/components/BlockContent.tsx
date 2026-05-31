@@ -5,6 +5,7 @@ interface Props {
   content: string
   className: string
   onInput(content: string): void
+  onKeyDown(e: React.KeyboardEvent<HTMLDivElement>): void
 }
 
 /**
@@ -15,7 +16,7 @@ interface Props {
  * happens on input; writing back into the same node is deliberately avoided.
  * Caret/selection hardening lands in a later slice (#7).
  */
-export default function BlockContent({ id, content, className, onInput }: Props) {
+export default function BlockContent({ id, content, className, onInput, onKeyDown }: Props) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function BlockContent({ id, content, className, onInput }: Props)
       suppressContentEditableWarning
       className={className}
       onInput={(e) => onInput(e.currentTarget.textContent ?? '')}
+      onKeyDown={onKeyDown}
     />
   )
 }
