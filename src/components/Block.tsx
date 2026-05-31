@@ -4,7 +4,9 @@ import { childrenOf } from '../domain/block'
 import {
   $blocks,
   deleteAndPromote,
+  indent,
   insertSiblingAfter,
+  outdent,
   setContent,
   setHighlight,
   setKind,
@@ -12,6 +14,7 @@ import {
 import { focusBlock } from './focus'
 import BlockContent from './BlockContent'
 import BlockMenu from './BlockMenu'
+import Editor from './Editor'
 
 interface Props {
   id: string
@@ -19,15 +22,19 @@ interface Props {
 
 /**
  * A single Block. Reads its own state from the store by id (no prop-drilling),
- * renders its editable content, exposes a menu for kind/highlight, and owns the
- * keyboard behaviour for creating and deleting Blocks.
+ * renders its editable content and any nested children, exposes a menu for
+ * kind/highlight, and owns the keyboard behaviour for creating, deleting,
+ * indenting and outdenting Blocks.
  */
 export default function Block({ id }: Props) {
   const blocks = useStore($blocks)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const block = blocks[id]
   if (!block) return null
 
+  const children = childrenOf(Object.values(blocks), id)
+  const hasChildren = children.length > 0
   const className = ['Block-content', block.kind, block.highlight].join(' ')
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
@@ -36,19 +43,32 @@ export default function Block({ id }: Props) {
     const isEmpty = text.trim() === ''
 
     if (e.key === 'Enter' && !e.shiftKey) {
-      // Enter on a non-empty Block inserts a sibling after it and focuses it.
       e.preventDefault()
-      if (isEmpty) return
+      if (isEmpty) {
+        // Enter on an empty nested Block outdents it instead of inserting.
+        if (block.parentId !== null) {
+          outdent(block.id)
+          focusBlock(block.id, 'end')
+        }
+        return
+      }
       const newId = insertSiblingAfter(block.id)
       if (newId) focusBlock(newId, 'start')
       return
     }
 
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      if (e.shiftKey) outdent(block.id)
+      else indent(block.id)
+      focusBlock(block.id, 'end')
+      return
+    }
+
     if (e.key === 'Backspace' && isEmpty) {
-      // Backspace on an empty Block deletes it and focuses the previous sibling.
       e.preventDefault()
       const siblings = childrenOf(Object.values($blocks.get()), block.parentId)
-      if (siblings.length <= 1) return // keep the last Block in the document
+      if (siblings.length <= 1 && block.parentId === null) return // keep last root Block
       const index = siblings.findIndex((b) => b.id === block.id)
       const previous = siblings[index - 1] ?? null
       deleteAndPromote(block.id)
@@ -65,6 +85,14 @@ export default function Block({ id }: Props) {
           aria-label="Open block menu"
           onClick={() => setMenuOpen((open) => !open)}
         />
+        {hasChildren && (
+          <i
+            className={['bx Block-nest-trigger', collapsed ? 'bx-caret-right' : 'bx-caret-down'].join(' ')}
+            role="button"
+            aria-label={collapsed ? 'Expand block' : 'Collapse block'}
+            onClick={() => setCollapsed((c) => !c)}
+          />
+        )}
         {menuOpen && (
           <BlockMenu
             onKind={(kind) => {
@@ -86,6 +114,11 @@ export default function Block({ id }: Props) {
           onKeyDown={handleKeyDown}
         />
       </div>
+      {hasChildren && !collapsed && (
+        <div className="Editor-indent">
+          <Editor parentId={block.id} />
+        </div>
+      )}
     </div>
   )
 }

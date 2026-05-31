@@ -103,6 +103,47 @@ export function deleteAndPromote(id: string): void {
   $blocks.set(all)
 }
 
+/**
+ * Indent a Block: make it a child of the sibling immediately above it,
+ * appended to the end of that sibling's children. No-op for the first Block
+ * in a level (nothing to indent under).
+ */
+export function indent(id: string): void {
+  const block = $blocks.get()[id]
+  if (!block) return
+
+  const siblings = childrenOf(allBlocks(), block.parentId)
+  const index = siblings.findIndex((b) => b.id === id)
+  const newParent = siblings[index - 1] ?? null
+  if (!newParent) return
+
+  const targetChildren = childrenOf(allBlocks(), newParent.id)
+  const last = targetChildren[targetChildren.length - 1] ?? null
+  const order = between(last ? last.order : null, null)
+
+  $blocks.setKey(id, { ...block, parentId: newParent.id, order })
+}
+
+/**
+ * Outdent a Block: promote it to sit alongside its former parent (become a
+ * child of its grandparent), positioned directly after that former parent in
+ * Order. No-op for a top-level Block (already at the root).
+ */
+export function outdent(id: string): void {
+  const block = $blocks.get()[id]
+  if (!block || block.parentId === null) return
+
+  const parent = $blocks.get()[block.parentId]
+  if (!parent) return
+
+  const parentSiblings = childrenOf(allBlocks(), parent.parentId)
+  const parentIndex = parentSiblings.findIndex((b) => b.id === parent.id)
+  const afterParent = parentSiblings[parentIndex + 1] ?? null
+  const order = between(parent.order, afterParent ? afterParent.order : null)
+
+  $blocks.setKey(id, { ...block, parentId: parent.parentId, order })
+}
+
 /** Seed an empty document with a single Paragraph if it is empty. */
 export function seedIfEmpty(): void {
   if (Object.keys($blocks.get()).length > 0) return
