@@ -1,57 +1,25 @@
-import { BlockType } from '../types'
-import Block from './Block';
+import { useStore } from '@nanostores/react'
+import { $blocks } from '../store/blocks'
+import { childrenOf } from '../domain/block'
+import Block from './Block'
 
 interface Props {
-  id: string,
-  blocksToDisplay: Array<BlockType>,
-  allBlocks: Array<BlockType>,
-  handleContentChange(e: any, id: string): any,
-  handleTypeChange(id: string, value: string): any,
-  handleColorChange(id: string, value: string): any,
-  handleAdd(): any,
-  handleDelete(id: string): any,
-  handleIndent(id: string, blocks: Array<BlockType>): any,
-  handleIndentEvent(id: string, editorId: string): any,
-  handleOutdent(id: string, parent: string): any,
-  emptyBlock(id: string): any
+  /** Render the children of this parent; `null` renders the document root. */
+  parentId: string | null
 }
 
-export default function Editor(props: Props) {
-
-  function indent(id: string, editorId: string) {
-    if (editorId === props.id) {
-      props.handleIndent(id, props.blocksToDisplay)
-    }
-  }
+/**
+ * Renders one level of the document: the Blocks under `parentId`, in order.
+ */
+export default function Editor({ parentId }: Props) {
+  const blocks = useStore($blocks)
+  const level = childrenOf(Object.values(blocks), parentId)
 
   return (
     <div className="Editor">
-      {props.blocksToDisplay.map((block: BlockType) => {
-        const children = props.allBlocks.filter(bl => bl.parent === block.id)
-        return (
-          <Block
-            key={block.id}
-            id={block.id}
-            editorId={props.id}
-            type={block.type}
-            color={block.color}
-            content={block.content}
-            parent={block.parent}
-            children={children}
-            blocks={props.allBlocks}
-            blockLength={props.blocksToDisplay.length}
-            handleContentChange={props.handleContentChange}
-            handleTypeChange={props.handleTypeChange}
-            handleColorChange={props.handleColorChange}
-            handleAdd={props.handleAdd}
-            handleDelete={props.handleDelete}
-            handleIndent={props.handleIndent}
-            handleIndentEvent={indent}
-            handleOutdent={props.handleOutdent}
-            emptyBlock={props.emptyBlock}
-          />
-        )
-      })}
+      {level.map((block) => (
+        <Block key={block.id} id={block.id} />
+      ))}
     </div>
   )
 }
