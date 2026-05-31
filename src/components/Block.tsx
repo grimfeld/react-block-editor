@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStore } from '@nanostores/react'
 import { childrenOf } from '../domain/block'
 import {
@@ -5,9 +6,12 @@ import {
   deleteAndPromote,
   insertSiblingAfter,
   setContent,
+  setHighlight,
+  setKind,
 } from '../store/blocks'
 import { focusBlock } from './focus'
 import BlockContent from './BlockContent'
+import BlockMenu from './BlockMenu'
 
 interface Props {
   id: string
@@ -15,11 +19,12 @@ interface Props {
 
 /**
  * A single Block. Reads its own state from the store by id (no prop-drilling),
- * renders its editable content, and owns the keyboard behaviour for creating
- * and deleting Blocks.
+ * renders its editable content, exposes a menu for kind/highlight, and owns the
+ * keyboard behaviour for creating and deleting Blocks.
  */
 export default function Block({ id }: Props) {
   const blocks = useStore($blocks)
+  const [menuOpen, setMenuOpen] = useState(false)
   const block = blocks[id]
   if (!block) return null
 
@@ -54,6 +59,24 @@ export default function Block({ id }: Props) {
   return (
     <div className="Block-main">
       <div className="Block-wrapper">
+        <i
+          className="bx bx-dots-horizontal-rounded Block-menu-trigger"
+          role="button"
+          aria-label="Open block menu"
+          onClick={() => setMenuOpen((open) => !open)}
+        />
+        {menuOpen && (
+          <BlockMenu
+            onKind={(kind) => {
+              setKind(block.id, kind)
+              setMenuOpen(false)
+            }}
+            onHighlight={(highlight) => {
+              setHighlight(block.id, highlight)
+              setMenuOpen(false)
+            }}
+          />
+        )}
         <div className="Block-dot" />
         <BlockContent
           id={block.id}
