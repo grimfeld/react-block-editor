@@ -1,5 +1,11 @@
 import { map } from 'nanostores'
-import { type Block, childrenOf, createBlock } from '../domain/block'
+import {
+  type Block,
+  type BlockKind,
+  type Highlight,
+  childrenOf,
+  createBlock,
+} from '../domain/block'
 import { createId } from '../domain/id'
 import { between, firstKey } from '../domain/order'
 
@@ -32,6 +38,20 @@ export function setContent(id: string, content: string): void {
 /** Clear a Block's content without removing it. */
 export function emptyBlock(id: string): void {
   setContent(id, '')
+}
+
+/** Set a Block's kind (paragraph / heading1-3), leaving content and position. */
+export function setKind(id: string, kind: BlockKind): void {
+  const block = $blocks.get()[id]
+  if (!block) return
+  $blocks.setKey(id, { ...block, kind })
+}
+
+/** Set a Block's highlight (default / yellow / red / green). */
+export function setHighlight(id: string, highlight: Highlight): void {
+  const block = $blocks.get()[id]
+  if (!block) return
+  $blocks.setKey(id, { ...block, highlight })
 }
 
 /**
