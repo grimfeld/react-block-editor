@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './styles/App.css';
 import { BlockType } from './types'
 import Editor from './components/Editor'
