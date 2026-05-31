@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Editor from './Editor'
 import '../styles/Block.css'
-import { BlockType } from 'src/types'
+import { BlockType } from '../types'
 
 interface Props {
   id: string,
