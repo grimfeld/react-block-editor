@@ -14,14 +14,23 @@
     left: -25px
     top: 0
     margin: 5px 0
+    padding: 0
+    border: none
+    background: none
+    color: inherit
     font-size: 20px
     cursor: pointer
-    &:hover
+    &:hover, &:focus-visible
       opacity: 1
   .Block-nest-trigger
     position: absolute
     top: calc(50% - 8px)
     left: 0
+    padding: 0
+    border: none
+    background: none
+    color: inherit
+    font-size: 16px
     cursor: pointer
   .Block-menu
     position: absolute
@@ -45,6 +54,11 @@
       margin: 2px
       cursor: pointer
       font-size: 13px
+      font-family: inherit
+      background: none
+      color: inherit
+      &:focus-visible
+        outline: 2px solid #888
       &.green
         background-color: #e9edc9
       &.yellow

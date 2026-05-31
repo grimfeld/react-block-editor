@@ -24,15 +24,16 @@ function App() {
 
   return (
     <div className="App">
-      <div className="Editor-wrapper">
+      <h1 className="visually-hidden">React Block Editor</h1>
+      <main className="Editor-wrapper" aria-label="Document">
         <Editor parentId={ROOT} />
-      </div>
-      <div className="Result">
+      </main>
+      <aside className="Result" aria-label="Document data (JSON)">
         <pre>{JSON.stringify(Object.values(blocks), null, 2)}</pre>
-      </div>
-      <p className="Credits">
+      </aside>
+      <footer className="Credits">
         App by <a href="https://grimfeld.tech">Grimfeld</a>
-      </p>
+      </footer>
     </div>
   )
 }
